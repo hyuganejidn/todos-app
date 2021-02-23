@@ -1,24 +1,16 @@
 import { observer } from 'mobx-react'
 import React from 'react'
-import { ITodo, TodosStore } from './TodoStore'
+import { Todo } from './TodoStore'
 import { TodoView } from './TodoView'
 
 type TodosViewProps = {
-  todosStore: TodosStore
+  todos: Todo[]
 }
 
-export const TodosView: React.FC<TodosViewProps> = observer(({ todosStore: { todos, removeTodo, toggleCompleteTodo } }) => {
+export const TodosView: React.FC<TodosViewProps> = observer(({ todos }) => {
   return (
     <ul>
-      {todos.map((todo: ITodo) => {
-        return (
-          <TodoView
-            key={todo.id}
-            todo={todo}
-            removeTodo={removeTodo}
-            toggleCompleteTodo={toggleCompleteTodo} />
-        )
-      })}
+      {todos.map((todo: Todo) =>  <TodoView key={todo.id} todo={todo} />)}
     </ul>
   )
 })

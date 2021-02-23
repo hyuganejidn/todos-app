@@ -1,20 +1,13 @@
-import { reaction } from 'mobx'
 import { observer } from 'mobx-react'
-import React, { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useStore } from '../../store/store'
 
-const initialUser = { name: '', username: '', isLogin: false }
-
-// autorun(() => {
-//   console.log("Energy level:")
-// })
-
+const initialUser = { name: '', username: '' }
 
 function User() {
-  const { usersStore, todosStore } = useStore()
+  const { userStore } = useStore()
   const [userLogin, setUserLogin] = useState('')
-  const [user, setUser] = useState(initialUser)
-  const [countTodoUsers, setCountTodoUsers] = useState({})
+  const [user, setUser] = useState<{ username: string, name: string }>(initialUser)
 
   const handleChangeInputCreateUser = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
@@ -26,14 +19,6 @@ function User() {
     setUserLogin(e.target.value)
   }
 
-
-  reaction(() => {
-    return todosStore.todos
-  }, (todos) => {
-    console.log(todos, 'todos')
-    // const
-  })
-
   return (
     <div>
       <form action="" autoComplete="off">
@@ -44,22 +29,26 @@ function User() {
         <input type="text" name="name" id="name" value={user.name} onChange={handleChangeInputCreateUser} />
         <br />
         <button type="button" onClick={() => {
-          usersStore.createUser(user)
+          userStore.createUser(user.username, user.name)
           setUser(initialUser)
         }}>create User</button>
       </form>
-      {!!usersStore.users.length && (
+      {!!userStore.users.length && (
         <>
           <h2>List USer</h2>
           <ul>
-            {usersStore.users.map((user, i) =>
-              <li key={i}>{user.name}/ {user.username}</li>
+            {userStore.users.map((user, i) =>
+              <li key={i}>
+                Name: {user.name} / username: {user.username}
+                <br/>
+                Task{user.todosCount > 0 && 's'}: {user.todosCount}
+              </li>
             )}
           </ul>
         </>
       )}
 
-      {!!usersStore.users.length && !usersStore.currentUser && (
+      {!!userStore.users.length && !userStore.currentUser && (
         <>
           <h1>Login</h1>
           <form action="" autoComplete="off">
@@ -67,19 +56,18 @@ function User() {
             <input type="text" name="userLogin" id="userLogin" value={userLogin} onChange={handleChangeInputLogin} />
             <br />
             <button type="button" onClick={() => {
-              usersStore.login(userLogin)
+              userStore.login(userLogin)
               setUserLogin('')
             }}>Login</button>
           </form>
         </>
       )}
 
-      {!!usersStore.currentUser?.name && (
+      {!!userStore.currentUser && (
         <>
-          <h3> Current user &gt; {usersStore.currentUser?.name}</h3>
-          <div>Number tasks {usersStore.taskOfCurrentUserCount}</div>
+          <h3> Current user =&gt; {userStore.currentUser?.name} / {userStore.todosCount} tasks </h3>
           <button type="button" onClick={() => {
-            usersStore.logout()
+            userStore.logout()
           }}>Logout</button>
         </>
       )}

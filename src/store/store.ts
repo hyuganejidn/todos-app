@@ -1,10 +1,10 @@
 import { createContext, useContext } from "react"
-import { TodosStore } from "../features/todo/TodoStore"
-import { UsersStore } from "../features/user/UserStore"
+import { TodoStore } from "../features/todo/TodoStore"
+import { UserStore } from "../features/user/UserStore"
 
 export interface IStore {
-  todosStore: TodosStore
-  usersStore: UsersStore
+  todoStore: TodoStore
+  userStore: UserStore
 }
 // export const rootStore: IStore = {
 //   usersStore: new UsersStore(this),
@@ -12,12 +12,12 @@ export interface IStore {
 // }
 
 export class RootStore {
-  todosStore: TodosStore
-  usersStore: UsersStore
+  todoStore: TodoStore
+  userStore: UserStore
 
   constructor() {
-    this.usersStore = new UsersStore(this)
-    this.todosStore = new TodosStore(this)
+    this.userStore = new UserStore(this)
+    this.todoStore = new TodoStore(this)
   }
 }
 

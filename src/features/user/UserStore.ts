@@ -1,53 +1,81 @@
-import { action, computed, makeObservable, observable } from "mobx";
-import { ITodo } from "../todo/TodoStore";
-import { IStore, RootStore } from './../../store/store';
+import { action, computed, makeObservable, observable } from "mobx"
+import { RootStore } from './../../store/store'
 
-export interface IUser {
+export class User {
+  id: number
   username: string
   name: string
-  isLogin: boolean
+  userStore: UserStore
+
+  constructor(
+    userStore: UserStore,
+    username: string,
+    name: string,
+    id = +Math.random().toFixed(4)
+  ) {
+    this.userStore = userStore
+    this.id = id
+    this.username = username
+    this.name = name
+
+    makeObservable(this, {
+      id: observable,
+      username: observable,
+      name: observable,
+
+      todos: computed,
+      todosCount: computed,
+    })
+  }
+
+  get todos() {
+    return this.userStore.rootStore?.todoStore?.todos.filter(todo => todo.author?.id === this.id)
+  }
+
+  get todosCount() {
+    return this.todos?.length
+  }
 }
 
-export class UsersStore {
+export class UserStore {
   rootStore: RootStore
-  users: IUser[] = []
+  users: User[] = []
+  currentUser: User | undefined = undefined
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore
     makeObservable(this, {
       users: observable,
-      currentUser: computed,
-      taskOfCurrentUserCount: computed,
+      currentUser: observable,
+
+      todos: computed,
+      todosCount: computed,
+
       createUser: action,
       login: action,
       logout: action
     })
   }
 
-  get currentUser() {
-    const user = this.users.find(user => user.isLogin)
-    return user
+  get todos() {
+    return this.currentUser?.todos
   }
 
-  get taskOfCurrentUserCount() {
-    return this.rootStore.todosStore.todos.filter(todo => todo.author?.name === this.currentUser?.name).length
+  get todosCount() {
+    return this.currentUser?.todos.length
   }
 
-  createUser(user: IUser) {
-    this.users.push(user);
+  createUser(username: string, name: string) {
+    const user = new User(this, username, name)
+    this.users.push(user)
   }
 
   login(username: string) {
-    const userIndex = this.users.findIndex(user => user.username === username)
-    if (~userIndex) {
-      this.users[userIndex].isLogin = true
-    }
+    const user = this.users.find(user => user.username === username)
+    this.currentUser = user
   }
 
   logout() {
-    const userIndex = this.users.findIndex(user => user.isLogin)
-    if (~userIndex) {
-      this.users[userIndex].isLogin = false
-    }
+    this.currentUser = undefined
   }
 }
