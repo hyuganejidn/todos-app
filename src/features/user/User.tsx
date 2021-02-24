@@ -1,38 +1,68 @@
+import { FastField, Formik, Form } from 'formik'
 import { observer } from 'mobx-react'
 import { ChangeEvent, useState } from 'react'
 import { useStore } from '../../store/store'
+import InputField from '../../components/form/InputField'
+import * as Yup from 'yup';
 
 const initialUser = { name: '', username: '' }
+
+export interface FormUserValues {
+  name: string;
+  username: string;
+}
 
 function User() {
   const { userStore } = useStore()
   const [userLogin, setUserLogin] = useState('')
-  const [user, setUser] = useState<{ username: string, name: string }>(initialUser)
-
-  const handleChangeInputCreateUser = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault()
-    setUser({ ...user, [e.target.name]: e.target.value })
-  }
 
   const handleChangeInputLogin = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault()
     setUserLogin(e.target.value)
   }
 
+  const validationSchema = Yup.object({
+    name: Yup.string().required('This field is required'),
+
+    username: Yup.string().required('This field is required')
+  })
+
+  console.log(Yup)
   return (
     <div>
-      <form action="" autoComplete="off">
-        <label htmlFor="username">username</label>
-        <input type="text" name="username" id="username" value={user.username} onChange={handleChangeInputCreateUser} />
-        <br />
-        <label htmlFor="name">Full name</label>
-        <input type="text" name="name" id="name" value={user.name} onChange={handleChangeInputCreateUser} />
-        <br />
-        <button type="button" onClick={() => {
-          userStore.createUser(user.username, user.name)
-          setUser(initialUser)
-        }}>create User</button>
-      </form>
+      <Formik
+        initialValues={initialUser}
+        onSubmit={(values, actions) => {
+          userStore.createUser(values.username, values.name)
+          actions.resetForm()
+        }}
+        validationSchema={validationSchema}
+      >
+        {(formikProps) => {
+          // const { values, errors, touched } = formikProps
+          console.log(formikProps)
+          return (
+            <Form>
+              <FastField
+                name='username'
+                component={InputField}
+
+                label="User name"
+                placeholder="username"
+              />
+
+              <FastField
+                name='name'
+                component={InputField}
+
+                label="Name"
+                placeholder="name"
+              />
+              <button type="submit">create</button>
+            </Form>
+          )
+        }}
+      </Formik>
       {!!userStore.users.length && (
         <>
           <h2>List USer</h2>
@@ -40,7 +70,7 @@ function User() {
             {userStore.users.map((user, i) =>
               <li key={i}>
                 Name: {user.name} / username: {user.username}
-                <br/>
+                <br />
                 Task{user.todosCount > 0 && 's'}: {user.todosCount}
               </li>
             )}
